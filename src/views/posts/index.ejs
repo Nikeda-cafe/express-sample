@@ -1,0 +1,43 @@
+<h1>Posts</h1>
+
+<p>
+  <a href="/posts/new">Create New Post</a>
+</p>
+
+<p>
+  Filter:
+  <a href="/posts">All</a> |
+  <a href="/posts?published=true">Published Only</a>
+</p>
+
+<% if (posts && posts.length > 0) { %>
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Title</th>
+        <th>Author</th>
+        <th>Status</th>
+        <th>Created At</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% posts.forEach(post => { %>
+        <tr>
+          <td><%= post.id %></td>
+          <td><%= post.title %></td>
+          <td><%= post.author ? post.author.name || post.author.email : 'Unknown' %></td>
+          <td><%= post.published ? 'Published' : 'Draft' %></td>
+          <td><%= new Date(post.createdAt).toLocaleDateString() %></td>
+          <td>
+            <a href="/posts/<%= post.id %>">View</a> |
+            <a href="/posts/<%= post.id %>/edit">Edit</a>
+          </td>
+        </tr>
+      <% }); %>
+    </tbody>
+  </table>
+<% } else { %>
+  <p>No posts found.</p>
+<% } %>

@@ -1,0 +1,9 @@
+<h1>Error <%= statusCode || 500 %></h1>
+<p><%= message %></p>
+
+<% if (error && error.stack) { %>
+  <h2>Stack Trace</h2>
+  <pre><%= error.stack %></pre>
+<% } %>
+
+<p><a href="/">Back to Home</a></p>

@@ -1,0 +1,30 @@
+<h1><%= post.title %></h1>
+
+<dl>
+  <dt>Author:</dt>
+  <dd><%= post.author ? (post.author.name || post.author.email) : 'Unknown' %></dd>
+
+  <dt>Status:</dt>
+  <dd><%= post.published ? 'Published' : 'Draft' %></dd>
+
+  <dt>Created At:</dt>
+  <dd><%= new Date(post.createdAt).toLocaleString() %></dd>
+
+  <dt>Updated At:</dt>
+  <dd><%= new Date(post.updatedAt).toLocaleString() %></dd>
+</dl>
+
+<div class="content">
+  <h2>Content</h2>
+  <p><%= post.content || 'No content' %></p>
+</div>
+
+<p>
+  <a href="/posts/<%= post.id %>/edit">Edit</a> |
+  <% if (!post.published) { %>
+    <form method="POST" action="/posts/<%= post.id %>/publish" style="display: inline;">
+      <button type="submit">Publish</button>
+    </form> |
+  <% } %>
+  <a href="/posts">Back to Posts</a>
+</p>
