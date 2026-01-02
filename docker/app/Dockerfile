@@ -8,16 +8,16 @@ RUN apk add --no-cache tzdata && \
     echo "Asia/Tokyo" > /etc/timezone
 
 # Python と build tools のインストール (Prisma用)
-RUN apk add --no-cache python3 make g++ openssl
+RUN apk add --no-cache python3 make g++ openssl openssl-dev
 
 # package.json と package-lock.json をコピー
 COPY package*.json ./
 
-# 依存関係のインストール
+# すべての依存関係をインストール（devDependenciesも含む）
 RUN npm install
 
-# アプリケーションファイルをコピー
-COPY . .
+# Prismaディレクトリをコピー
+COPY prisma ./prisma
 
 # Prismaクライアントの生成
 RUN npx prisma generate

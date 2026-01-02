@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { PostService } from '../services/post.service';
 
 export class PostController {
-  constructor(private postService: PostService) {}
+  constructor(private postService: PostService) { }
 
   // GET /posts - 投稿一覧表示
   async index(req: Request, res: Response, next: NextFunction): Promise<void> {

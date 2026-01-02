@@ -72,6 +72,9 @@ export class UserService {
 
   async getUserStats(id: number): Promise<{ user: User; postCount: number; publishedCount: number }> {
     const user = await this.getUserById(id);
+    if (!user) {
+      throw new Error('User not found');
+    }
     const posts = await postRepository.findByAuthorId(id);
     const publishedCount = posts.filter(post => post.published).length;
 

@@ -14,19 +14,19 @@ router.get('/new', (req, res) => postController.new(req, res));
 // 投稿作成
 router.post('/', (req, res, next) => postController.create(req, res, next));
 
+// 投稿編集フォーム（/:idより前に定義する必要がある）
+router.get('/:id/edit', (req, res, next) => postController.edit(req, res, next));
+
+// 投稿削除（/:idより前に定義する必要がある）
+router.post('/:id/delete', (req, res, next) => postController.destroy(req, res, next));
+
+// 投稿公開（/:idより前に定義する必要がある）
+router.post('/:id/publish', (req, res, next) => postController.publish(req, res, next));
+
 // 投稿詳細
 router.get('/:id', (req, res, next) => postController.show(req, res, next));
 
-// 投稿編集フォーム
-router.get('/:id/edit', (req, res, next) => postController.edit(req, res, next));
-
 // 投稿更新
 router.post('/:id', (req, res, next) => postController.update(req, res, next));
-
-// 投稿削除
-router.post('/:id/delete', (req, res, next) => postController.destroy(req, res, next));
-
-// 投稿公開
-router.post('/:id/publish', (req, res, next) => postController.publish(req, res, next));
 
 export default router;
