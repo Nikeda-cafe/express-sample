@@ -7,19 +7,36 @@ export class UserController {
   // GET /users - ユーザー一覧表示
   async index(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const response = await fetch(process.env.API_GATEWAY_URL + '/sample-lambda-function' || '', {
+      // API Gatewayへのリクエスト
+      console.log('https://jki9aqsy20.execute-api.ap-northeast-1.amazonaws.com/default/sample-lambda-function');
+      const apiGatewayResponse = await fetch('https://jki9aqsy20.execute-api.ap-northeast-1.amazonaws.com/default/sample-lambda-function', {
         method: 'GET',
         headers: {
           'x-api-key': process.env.API_GATEWAY_KEY || '',
           'Content-Type': 'application/json',
         }
       });
-      const data = await response.json();
-      console.log(data);
-      const users = await this.userService.getAllUsers();
+      const apiGatewayData = await apiGatewayResponse.json();
+      console.log(apiGatewayData);
+
+      // JSONPlaceholder APIからpostsデータを取得
+      console.log('https://jsonplaceholder.typicode.com/posts');
+      const response = await fetch('https://jsonplaceholder.typicode.com/posts', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const posts = await response.json();
+      
       res.render('users/index', {
-        title: 'Users',
-        users
+        title: 'Posts from JSONPlaceholder',
+        posts
       });
     } catch (error) {
       next(error);

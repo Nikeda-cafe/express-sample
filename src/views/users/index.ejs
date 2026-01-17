@@ -1,33 +1,26 @@
-<h1>Users</h1>
+<h1>Posts from JSONPlaceholder</h1>
 
-<p><a href="/users/new">Create New User</a></p>
-
-<% if (users && users.length > 0) { %>
+<% if (posts && posts.length > 0) { %>
   <table>
     <thead>
       <tr>
         <th>ID</th>
-        <th>Name</th>
-        <th>Email</th>
-        <th>Created At</th>
-        <th>Actions</th>
+        <th>User ID</th>
+        <th>Title</th>
+        <th>Body</th>
       </tr>
     </thead>
     <tbody>
-      <% users.forEach(user => { %>
+      <% posts.forEach(post => { %>
         <tr>
-          <td><%= user.id %></td>
-          <td><%= user.name || 'N/A' %></td>
-          <td><%= user.email %></td>
-          <td><%= new Date(user.createdAt).toLocaleDateString() %></td>
-          <td>
-            <a href="/users/<%= user.id %>">View</a> |
-            <a href="/users/<%= user.id %>/edit">Edit</a>
-          </td>
+          <td><%= post.id %></td>
+          <td><%= post.userId %></td>
+          <td><%= post.title %></td>
+          <td><%= post.body.length > 100 ? post.body.substring(0, 100) + '...' : post.body %></td>
         </tr>
       <% }); %>
     </tbody>
   </table>
 <% } else { %>
-  <p>No users found.</p>
+  <p>No posts found.</p>
 <% } %>

@@ -36,8 +36,8 @@ RUN apk add --no-cache tzdata && \
     cp /usr/share/zoneinfo/Asia/Tokyo /etc/localtime && \
     echo "Asia/Tokyo" > /etc/timezone
 
-# OpenSSLのインストール（Prisma用）
-RUN apk add --no-cache openssl openssl-dev
+# OpenSSLとcurlのインストール（Prisma用 + ヘルスチェック用）
+RUN apk add --no-cache openssl openssl-dev curl
 
 # 本番用の依存関係のみインストール
 COPY package*.json ./
@@ -51,7 +51,7 @@ COPY --from=builder /app/public ./public
 COPY --from=builder /app/src/views ./dist/views
 
 # ポート公開
-EXPOSE 3001
+EXPOSE 3000
 
 # 本番サーバー起動
 CMD ["npm", "start"]
