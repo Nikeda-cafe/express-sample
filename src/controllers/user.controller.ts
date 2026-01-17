@@ -7,6 +7,15 @@ export class UserController {
   // GET /users - ユーザー一覧表示
   async index(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
+      const response = await fetch(process.env.API_GATEWAY_URL + '/sample-lambda-function' || '', {
+        method: 'GET',
+        headers: {
+          'x-api-key': process.env.API_GATEWAY_KEY || '',
+          'Content-Type': 'application/json',
+        }
+      });
+      const data = await response.json();
+      console.log(data);
       const users = await this.userService.getAllUsers();
       res.render('users/index', {
         title: 'Users',

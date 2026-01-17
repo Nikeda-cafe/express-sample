@@ -1,5 +1,9 @@
+import dotenv from 'dotenv';
 import app from './app';
 import { PrismaClient } from '@prisma/client';
+
+// .envファイルから環境変数を読み込む
+dotenv.config();
 
 const PORT = process.env.PORT || 3000;
 const prisma = new PrismaClient();

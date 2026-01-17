@@ -27,7 +27,9 @@ app.use('/', routes);
 app.use((req: Request, res: Response) => {
   res.status(404).render('error', {
     title: '404 Not Found',
-    message: 'Page not found'
+    message: 'Page not found',
+    statusCode: 404,
+    error: {}
   });
 });
 

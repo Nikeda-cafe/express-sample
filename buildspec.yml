@@ -1,0 +1,88 @@
+version: 0.2
+
+env:
+  variables:
+    AWS_DEFAULT_REGION: ap-northeast-1
+    IMAGE_REPO_NAME: express-app
+    IMAGE_TAG: latest
+  parameter-store:
+    # Secrets Managerから取得する場合は、ここでパラメータストアのパスを指定
+    # DATABASE_URL: /express-app/database-url
+
+phases:
+  pre_build:
+    commands:
+      - echo Logging in to Amazon ECR...
+      - aws --version
+      - echo $CODEBUILD_RESOLVED_SOURCE_VERSION
+      - echo Building the Docker image...
+      - REPOSITORY_URI=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME
+      - COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
+      - IMAGE_TAG=${COMMIT_HASH:=latest}
+      - echo Logging in to Amazon ECR...
+      - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
+      - echo Repository URI is $REPOSITORY_URI
+      - echo Image tag is $IMAGE_TAG
+
+  build:
+    commands:
+      - echo Build started on `date`
+      - echo Building the Docker image...
+      - docker build --platform linux/amd64 -t $IMAGE_REPO_NAME:$IMAGE_TAG .
+      - docker tag $IMAGE_REPO_NAME:$IMAGE_TAG $REPOSITORY_URI:$IMAGE_TAG
+      - docker tag $IMAGE_REPO_NAME:$IMAGE_TAG $REPOSITORY_URI:latest
+
+  post_build:
+    commands:
+      - echo Build completed on `date`
+      - echo Pushing the Docker images...
+      - docker push $REPOSITORY_URI:$IMAGE_TAG
+      - docker push $REPOSITORY_URI:latest
+      - echo Writing image definitions file...
+      - printf '[{"name":"express-app","imageUri":"%s"}]' $REPOSITORY_URI:$IMAGE_TAG > imagedefinitions.json
+      - cat imagedefinitions.json
+      - echo Updating task definition...
+      - |
+        # 最新のタスク定義を取得
+        echo "Getting latest task definition..."
+        aws ecs describe-task-definition \
+          --task-definition express-app \
+          --query 'taskDefinition' > task-definition-temp.json
+        
+        # 不要なフィールドを削除（register-task-definitionで使用できないフィールド）
+        cat task-definition-temp.json | jq 'del(.taskDefinitionArn, .revision, .status, .requiresAttributes, .placementConstraints, .compatibilities, .registeredAt, .registeredBy)' > task-definition.json
+        
+        # イメージURIを更新
+        NEW_IMAGE_URI="$REPOSITORY_URI:$IMAGE_TAG"
+        echo "Updating image URI to: $NEW_IMAGE_URI"
+        cat task-definition.json | jq --arg IMAGE "$NEW_IMAGE_URI" '.containerDefinitions[0].image = $IMAGE' > task-definition-updated.json
+        mv task-definition-updated.json task-definition.json
+        
+        # 新しいタスク定義を登録
+        echo "Registering new task definition..."
+        NEW_TASK_DEFINITION_ARN=$(aws ecs register-task-definition \
+          --cli-input-json file://task-definition.json \
+          --query 'taskDefinition.taskDefinitionArn' \
+          --output text)
+        
+        echo "New task definition ARN: $NEW_TASK_DEFINITION_ARN"
+        echo $NEW_TASK_DEFINITION_ARN > task-definition-arn.txt
+        
+        # ECSサービスを更新
+        echo "Updating ECS service..."
+        aws ecs update-service \
+          --cluster $CLUSTER_NAME \
+          --service $SERVICE_NAME \
+          --task-definition $NEW_TASK_DEFINITION_ARN \
+          --force-new-deployment \
+          --query 'service.serviceName' \
+          --output text
+        
+        echo "Service update initiated successfully"
+
+artifacts:
+  files:
+    - imagedefinitions.json
+    - task-definition.json
+    - task-definition-arn.txt
+
