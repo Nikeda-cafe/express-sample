@@ -22,7 +22,9 @@
     "build:lambda": "npm run build && npm run package:lambda",
     "package:lambda": "cd dist/lambda && zip -r ../../lambda-deploy.zip .",
     "build:lambda:sample": "tsc --project tsconfig.lambda.json && npm run package:lambda:sample",
-    "package:lambda:sample": "cd dist/lambda/sample && zip -r ../../../lambda-sample-deploy.zip ."
+    "package:lambda:sample": "cd dist/lambda/sample && zip -r ../../../lambda-sample-deploy.zip .",
+    "batch:create-sample-post": "ts-node src/batch/create-sample-post.ts",
+    "batch": "node dist/batch/index.js"
   },
   "dependencies": {
     "@prisma/client": "^5.7.0",
