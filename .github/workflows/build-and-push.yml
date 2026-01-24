@@ -13,6 +13,10 @@ permissions:
 env:
   AWS_REGION: ap-northeast-1
   ECR_REPOSITORY: express-app
+  ECS_CLUSTER: ecs-express-cluster
+  ECS_SERVICE: ecs-express-service
+  ECS_TASK_DEFINITION: ecs-express-task-definition
+  CONTAINER_NAME: express-app
 
 jobs:
   build-and-push:
@@ -31,11 +35,15 @@ jobs:
     - name: Login to Amazon ECR
       id: login-ecr
       uses: aws-actions/amazon-ecr-login@v2
+    
+    - name: Set short SHA
+      id: vars
+      run: echo "IMAGE_TAG=${GITHUB_SHA:0:7}" >> $GITHUB_OUTPUT
       
     - name: Build, tag, and push image to Amazon ECR
       env:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        IMAGE_TAG: ${{ github.sha }}
+        IMAGE_TAG: ${{ steps.vars.outputs.IMAGE_TAG }}
       run: |
         echo "Building image..."
         docker build --platform linux/amd64 -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
@@ -45,4 +53,37 @@ jobs:
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
         
-        echo "✅ Image pushed: $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+        echo "Image pushed: $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+
+    - name: Download current task definition
+      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      run: |
+        aws ecs describe-task-definition \
+          --task-definition ${{ env.ECS_TASK_DEFINITION }} \
+          --query 'taskDefinition' > task-definition.json
+        
+        # 不要なフィールドを削除
+        cat task-definition.json | jq 'del(.taskDefinitionArn, .revision, .status, .requiresAttributes, .placementConstraints, .compatibilities, .registeredAt, .registeredBy)' > task-definition-clean.json
+        mv task-definition-clean.json task-definition.json
+
+    - name: Update task definition with new image
+      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      id: task-def
+      uses: aws-actions/amazon-ecs-render-task-definition@v1
+      with:
+        task-definition: task-definition.json
+        container-name: ${{ env.CONTAINER_NAME }}
+        image: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ steps.vars.outputs.IMAGE_TAG }}
+
+    - name: Deploy to Amazon ECS
+      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+      with:
+        task-definition: ${{ steps.task-def.outputs.task-definition }}
+        service: ${{ env.ECS_SERVICE }}
+        cluster: ${{ env.ECS_CLUSTER }}
+        wait-for-service-stability: true
+
+    - name: Deployment completed
+      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      run: echo "Deployment to ECS completed successfully!"
