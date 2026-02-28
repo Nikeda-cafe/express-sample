@@ -13,9 +13,9 @@ permissions:
 env:
   AWS_REGION: ap-northeast-1
   ECR_REPOSITORY: express-app
-  ECS_CLUSTER: ecs-express-cluster
-  ECS_SERVICE: ecs-express-service
-  ECS_TASK_DEFINITION: ecs-express-task-definition
+  ECS_CLUSTER: dev-express-app-cluster
+  ECS_SERVICE: dev-express-app-service 
+  ECS_TASK_DEFINITION: dev-express-app
   CONTAINER_NAME: express-app
 
 jobs:
