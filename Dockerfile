@@ -43,7 +43,8 @@ RUN apk add --no-cache openssl openssl-dev curl
 COPY package*.json ./
 COPY prisma ./prisma
 RUN npm ci --only=production && \
-    npx prisma generate
+    npx prisma generate && \
+    npm install prisma@^5.7.0
 
 # ビルド済みファイルをコピー
 COPY --from=builder /app/dist ./dist
@@ -53,5 +54,5 @@ COPY --from=builder /app/src/views ./dist/views
 # ポート公開
 EXPOSE 3000
 
-# 本番サーバー起動
-CMD ["npm", "start"]
+# マイグレーション実行後にサーバー起動
+CMD ["sh", "-c", "npx prisma migrate deploy && npm start"]
