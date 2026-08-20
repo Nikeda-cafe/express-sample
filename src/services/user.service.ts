@@ -1,6 +1,6 @@
 import userRepository, { UserRepository } from '../repositories/user.repository';
 import postRepository from '../repositories/post.repository';
-import { User, Prisma } from '@prisma/client';
+import { User } from '@prisma/client';
 
 export class UserService {
   constructor(private userRepo: UserRepository = userRepository) {}

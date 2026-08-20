@@ -14,7 +14,7 @@ describe('UserService', () => {
       update: jest.fn(),
       delete: jest.fn(),
       count: jest.fn(),
-    } as any;
+    } as unknown as jest.Mocked<UserRepository>;
 
     userService = new UserService(mockUserRepository);
   });

@@ -1,6 +1,6 @@
 import dotenv from 'dotenv';
 import prisma from '../config/database';
-import { Post, User } from '@prisma/client';
+import { User } from '@prisma/client';
 
 // 環境変数の読み込み
 dotenv.config();

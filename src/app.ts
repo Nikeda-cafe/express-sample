@@ -1,4 +1,4 @@
-import express, { Application, Request, Response, NextFunction } from 'express';
+import express, { Application, Request, Response } from 'express';
 import path from 'path';
 import expressLayouts from 'express-ejs-layouts';
 import routes from './routes';
