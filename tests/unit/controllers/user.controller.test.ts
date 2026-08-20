@@ -17,7 +17,7 @@ describe('UserController', () => {
       updateUser: jest.fn(),
       deleteUser: jest.fn(),
       getUserStats: jest.fn(),
-    } as any;
+    } as unknown as jest.Mocked<UserService>;
 
     userController = new UserController(mockUserService);
 
